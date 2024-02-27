@@ -1,0 +1,13 @@
+joint1.rotateZ = ((sin(time*$freq + $off + $delay*((2-clamp(0, 1, $falloff))-1 / ($jointNo - 1))*$Amp*((2-clamp(0, 1, $falloff))-1)/($jointNo-1)*1-(2/$jointNo)))*$zVal);
+joint2.rotateZ = ((sin(time*$freq + $off + $delay*((3-clamp(0, 2, $falloff))-1 / ($jointNo - 1))*$Amp*((3-clamp(0, 2, $falloff))-1)/($jointNo-1)*1-(3/$jointNo)))*$zVal);
+joint3.rotateZ = ((sin(time*$freq + $off + $delay*((4-clamp(0, 3, $falloff))-1 / ($jointNo - 1))*$Amp*((4-clamp(0, 3, $falloff))-1)/($jointNo-1)*1-(4/$jointNo)))*$zVal);
+joint4.rotateZ = ((sin(time*$freq + $off + $delay*((5-clamp(0, 4, $falloff))-1 / ($jointNo - 1))*$Amp*((5-clamp(0, 4, $falloff))-1)/($jointNo-1)*1-(5/$jointNo)))*$zVal);
+joint5.rotateZ = ((sin(time*$freq + $off + $delay*((6-clamp(0, 5, $falloff))-1 / ($jointNo - 1))*$Amp*((6-clamp(0, 5, $falloff))-1)/($jointNo-1)*1-(6/$jointNo)))*$zVal);
+
+joint6.rotateZ = ((sin(time*$freq + $off + $delay*((7-clamp(0, 6, $falloff))-1 / ($jointNo - 1))*$Amp*((7-clamp(0, 6, $falloff))-1)/($jointNo-1)*1-(7/$jointNo)))*$zVal);
+joint7.rotateZ = ((sin(time*$freq + $off + $delay*((8-clamp(0, 7, $falloff))-1 / ($jointNo - 1))*$Amp*((8-clamp(0, 7, $falloff))-1)/($jointNo-1)*1-(8/$jointNo)))*$zVal);
+joint8.rotateZ = ((sin(time*$freq + $off + $delay*((9-clamp(0, 8, $falloff))-1 / ($jointNo - 1))*$Amp*((9-clamp(0, 8, $falloff))-1)/($jointNo-1)*1-(9/$jointNo)))*$zVal);
+joint9.rotateZ = ((sin(time*$freq + $off + $delay*((10-clamp(0, 9, $falloff))-1 / ($jointNo - 1))*$Amp*((10-clamp(0, 9, $falloff))-1)/($jointNo-1)*1-(10/$jointNo)))*$zVal);
+joint10.rotateZ = ((sin(time*$freq + $off + $delay*((11-clamp(0, 10, $falloff))-1 / ($jointNo - 1))*$Amp*((11-clamp(0, 10, $falloff))-1)/($jointNo-1)*1-(11/$jointNo)))*$zVal);
+joint11.rotateZ = ((sin(time*$freq + $off + $delay*((12-clamp(0, 11, $falloff))-1 / ($jointNo - 1))*$Amp*((12-clamp(0, 11, $falloff))-1)/($jointNo-1)*1-(12/$jointNo)))*$zVal);
+joint12.rotateZ = ((sin(time*$freq + $off + $delay*((13-clamp(0, 12, $falloff))-1 / ($jointNo - 1))*$Amp*((13-clamp(0, 12, $falloff))-1)/($jointNo-1)*1-(13/$jointNo)))*$zVal);
