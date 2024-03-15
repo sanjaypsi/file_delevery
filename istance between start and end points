@@ -1,0 +1,45 @@
+import maya.cmds as cmds
+
+# Function to remove distance between start and end points
+def remove_distance(start_point, end_point):
+    distance_node = cmds.createNode('distanceBetween')
+    cmds.connectAttr(start_point + '.worldMatrix[0]', distance_node + '.inMatrix1')
+    cmds.connectAttr(end_point + '.worldMatrix[0]', distance_node + '.inMatrix2')
+    return distance_node
+
+# Function to create 5 locators
+def create_locators():
+    locators = []
+    for i in range(3):
+        locator = cmds.spaceLocator()[0]
+        locators.append(locator)
+    return locators
+
+# Main function
+def main():
+    # Assuming you have your start and end points already defined
+    start_point = 'pSphere1'
+    end_point = 'pSphere2'
+    
+    # Remove distance between start and end points
+    distance_node = remove_distance(start_point, end_point)
+    
+    # Get start and end positions
+    start_pos = cmds.xform(start_point, q=True, ws=True, t=True)
+    end_pos = cmds.xform(end_point, q=True, ws=True, t=True)
+    
+    # Calculate total distance between start and end points
+    total_distance = cmds.getAttr(distance_node + '.distance')
+    
+    # Create 5 locators
+    locators = create_locators()
+    nloc = (len(locators))+1
+    
+    # Position locators based on percentage along the distance between start and end points
+    for i, locator in enumerate(locators):
+        percentage = (i + 1) / nloc  # Distribute locators evenly along the distance
+        pos = [(end_pos[j] - start_pos[j]) * percentage + start_pos[j] for j in range(3)]
+        cmds.move(pos[0], pos[1], pos[2], locator)
+
+# Execute main function
+main()
