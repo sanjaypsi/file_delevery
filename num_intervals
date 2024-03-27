@@ -1,0 +1,29 @@
+import maya.cmds as cmds
+
+def get_in_between_parameters(surface_name, num_intervals):
+    # Check if the given object is a NURBS surface
+    if cmds.objectType(surface_name) != "nurbsSurface":
+        cmds.warning("The provided object is not a NURBS surface.")
+        return None
+    
+    # Get the parameter range
+    start_u = cmds.getAttr(surface_name + ".minValueU")
+    end_u = cmds.getAttr(surface_name + ".maxValueU")
+    
+    # Calculate the intervals
+    interval_size = (end_u - start_u) / (num_intervals + 1)
+    
+    # Generate the in-between parameters
+    in_between_parameters = []
+    for i in range(1, num_intervals + 1):
+        param = start_u + i * interval_size
+        in_between_parameters.append(param)
+    
+    return in_between_parameters
+
+# Example usage
+surface_name = "your_nurbs_surface_name"
+num_intervals = 5  # Number of intervals
+in_between_params = get_in_between_parameters(surface_name, num_intervals)
+if in_between_params is not None:
+    print("In-between parameters:", in_between_params)
