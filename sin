@@ -11,3 +11,17 @@ joint9.rotateZ = ((sin(time*$freq + $off + $delay*((10-clamp(0, 9, $falloff))-1 
 joint10.rotateZ = ((sin(time*$freq + $off + $delay*((11-clamp(0, 10, $falloff))-1 / ($jointNo - 1))*$Amp*((11-clamp(0, 10, $falloff))-1)/($jointNo-1)*1-(11/$jointNo)))*$zVal);
 joint11.rotateZ = ((sin(time*$freq + $off + $delay*((12-clamp(0, 11, $falloff))-1 / ($jointNo - 1))*$Amp*((12-clamp(0, 11, $falloff))-1)/($jointNo-1)*1-(12/$jointNo)))*$zVal);
 joint12.rotateZ = ((sin(time*$freq + $off + $delay*((13-clamp(0, 12, $falloff))-1 / ($jointNo - 1))*$Amp*((13-clamp(0, 12, $falloff))-1)/($jointNo-1)*1-(13/$jointNo)))*$zVal);
+
+
+
+// Example of a sine wave expression animating rotateZ attribute
+float $amplitude = 30; // Amplitude of the sine wave (in degrees)
+float $frequency = 0.5; // Frequency of the sine wave
+float $phase = 0; // Phase offset of the sine wave
+
+float $time = currentTime; // Get current time
+float $sineValue = $amplitude * sin($frequency * $time + $phase); // Calculate sine value
+
+// Apply sine wave animation to rotateZ attribute
+rotateZ = $sineValue;
+
