@@ -1,0 +1,95 @@
+To create a simple animation using machine learning in Autodesk Maya, we'll use TensorFlow to train a model that can generate animation data. Here's a basic guide on how to achieve this:
+
+Step 1: Setting Up Your Environment
+Install Autodesk Maya 2023 and ensure it's working correctly.
+Install TensorFlow by running pip install tensorflow in your Python environment.
+Step 2: Creating Training Data
+Create a dataset for training. For simplicity, let's animate a ball moving in a straight line.
+
+Create the ball animation manually in Maya and export the keyframe data.
+Export Keyframe Data: Use Maya's Python scripting to export keyframe data to a CSV file.
+Here's a sample script to export keyframe data:
+
+python
+Copy code
+import maya.cmds as cmds
+import csv
+
+def export_keyframes(object_name, output_file):
+    keyframes = cmds.keyframe(object_name, query=True, timeChange=True)
+    positions = cmds.keyframe(object_name, query=True, valueChange=True)
+
+    with open(output_file, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['time', 'position'])
+        for time, position in zip(keyframes, positions):
+            writer.writerow([time, position])
+
+export_keyframes('pSphere1', 'keyframes.csv')
+Step 3: Training the Model
+Use TensorFlow to train a model on this data.
+
+Load the data from the CSV file.
+Train a simple model to predict the position of the ball at each frame.
+Here's an example script:
+
+python
+Copy code
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+
+# Load data
+data = pd.read_csv('keyframes.csv')
+times = data['time'].values
+positions = data['position'].values
+
+# Normalize data
+times = times / max(times)
+positions = positions / max(positions)
+
+# Prepare data for training
+X_train = np.array(times).reshape(-1, 1)
+y_train = np.array(positions)
+
+# Build model
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(10, activation='relu', input_shape=(1,)),
+    tf.keras.layers.Dense(10, activation='relu'),
+    tf.keras.layers.Dense(1)
+])
+
+model.compile(optimizer='adam', loss='mse')
+
+# Train model
+model.fit(X_train, y_train, epochs=100)
+
+# Save model
+model.save('ball_animation_model.h5')
+Step 4: Using the Model to Generate Animation
+Load the trained model and generate predictions.
+Apply these predictions as keyframes in Maya.
+Here's an example script to apply the predictions:
+
+python
+Copy code
+import tensorflow as tf
+import numpy as np
+import maya.cmds as cmds
+
+# Load the trained model
+model = tf.keras.models.load_model('ball_animation_model.h5')
+
+# Generate keyframe predictions
+times = np.linspace(0, 1, 100)  # Generate 100 frames
+predictions = model.predict(times.reshape(-1, 1))
+
+# Apply keyframes in Maya
+cmds.select('pSphere1')
+for time, position in zip(times, predictions):
+    cmds.setKeyframe('pSphere1', time=time*100, attribute='translateX', value=position*10)  # Scaling for example
+Summary
+Export keyframe data from a simple animation in Maya.
+Train a machine learning model using TensorFlow to predict animation data.
+Generate new keyframe data using the trained model and apply it in Maya.
+This process can be expanded to more complex animations and models as needed.
