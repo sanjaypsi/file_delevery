@@ -1,0 +1,45 @@
+import json
+
+def generate_keyframe_data(predictions, joint_order):
+    keyframe_data = []
+
+    for frame in range(predictions.shape[0]):
+        frame_data = {}
+        for i, joint in enumerate(joint_order):
+            translation = predictions[frame, i * 6: i * 6 + 3].tolist()
+            rotation = predictions[frame, i * 6 + 3: i * 6 + 6].tolist()
+            frame_data[joint] = {'translate': translation, 'rotate': rotation}
+        keyframe_data.append(frame_data)
+
+    return keyframe_data
+
+def save_keyframe_data(keyframe_data, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(keyframe_data, f, indent=4)
+
+# Assuming joint_order and predictions are defined
+joint_order = ['joint1', 'joint2', 'joint3', ...]  # List of joints
+predictions = ...  # NumPy array of shape (num_frames, num_joints * 6)
+keyframe_data = generate_keyframe_data(predictions, joint_order)
+save_keyframe_data(keyframe_data, 'C:/path/to/save/keyframe_data.json')
+
+
+import json
+from maya import cmds
+
+def apply_keyframe_data(file_path, start_frame=1):
+    with open(file_path, 'r') as f:
+        keyframe_data = json.load(f)
+    
+    for frame, frame_data in enumerate(keyframe_data, start=start_frame):
+        cmds.currentTime(frame)
+        for joint, data in frame_data.items():
+            translation = data['translate']
+            rotation = data['rotate']
+            cmds.setAttr(f"{joint}.translate", *translation)
+            cmds.setAttr(f"{joint}.rotate", *rotation)
+            cmds.setKeyframe(joint, attribute='translate')
+            cmds.setKeyframe(joint, attribute='rotate')
+
+# Usage
+apply_keyframe_data('C:/path/to/save/keyframe_data.json', start_frame=1)
