@@ -1,0 +1,78 @@
+import json
+from maya import cmds
+
+def export_keyframes(file_path):
+    joints = cmds.ls(type='joint')
+    keyframe_data = {}
+    
+    for joint in joints:
+        keyframe_data[joint] = {'translate': [], 'rotate': []}
+        times = cmds.keyframe(joint, query=True, timeChange=True)
+        
+        for time in times:
+            cmds.currentTime(time)
+            translation = cmds.getAttr(joint + '.translate')[0]
+            rotation = cmds.getAttr(joint + '.rotate')[0]
+            
+            keyframe_data[joint]['translate'].append(translation)
+            keyframe_data[joint]['rotate'].append(rotation)
+    
+    with open(file_path, 'w') as f:
+        json.dump(keyframe_data, f, indent=4)
+
+export_keyframes('C:/path/to/save/keyframe_data.json')
+
+
+import json
+import numpy as np
+
+def load_keyframe_data(file_path):
+    with open(file_path, 'r') as f:
+        keyframe_data = json.load(f)
+    
+    # Extract joint names
+    joints = list(keyframe_data.keys())
+    
+    # Extract keyframe data
+    translations = []
+    rotations = []
+    
+    for joint in joints:
+        translations.append(keyframe_data[joint]['translate'])
+        rotations.append(keyframe_data[joint]['rotate'])
+    
+    translations = np.array(translations)
+    rotations = np.array(rotations)
+    
+    return translations, rotations
+
+translations, rotations = load_keyframe_data('C:/path/to/save/keyframe_data.json')
+
+
+def normalize_data(data):
+    mean = np.mean(data, axis=0)
+    std = np.std(data, axis=0)
+    normalized_data = (data - mean) / std
+    return normalized_data
+
+normalized_translations = normalize_data(translations)
+normalized_rotations = normalize_data(rotations)
+
+def create_sequences(data, timesteps):
+    sequences = []
+    for i in range(len(data) - timesteps):
+        sequences.append(data[i:i + timesteps])
+    return np.array(sequences)
+
+timesteps = 10  # Example number of timesteps
+X_translations = create_sequences(normalized_translations, timesteps)
+X_rotations = create_sequences(normalized_rotations, timesteps)
+
+y_translations = normalized_translations[timesteps:]
+y_rotations = normalized_rotations[timesteps:]
+
+X = np.concatenate((X_translations, X_rotations), axis=-1)
+y = np.concatenate((y_translations, y_rotations), axis=-1)
+
+
+
