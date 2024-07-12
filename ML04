@@ -44,3 +44,22 @@ print('X_train shape:', X_train.shape)  # Should be (number of sequences, 39, 3)
 print('y_train shape:', y_train.shape)  # Should be (number of sequences, 3)
 print('X_val shape:', X_val.shape)
 print('y_val shape:', y_val.shape)
+
+# Define the LSTM model with additional layers and dropout for regularization
+model = Sequential([
+    LSTM(100, return_sequences=True, input_shape=(sequence_length, 3)),
+    Dropout(0.2),
+    LSTM(50),
+    Dropout(0.2),
+    Dense(3)
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='mse')
+
+# Define early stopping to prevent overfitting
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+# Train the model with validation data
+history = model.fit(X_train, y_train, epochs=200, batch_size=16, validation_data=(X_val, y_val), callbacks=[early_stopping])
+
