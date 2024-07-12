@@ -1,0 +1,46 @@
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+
+# Path to the CSV file
+csv_file_path = 'C:/path/to/your/positions.csv'
+
+# Load the CSV file into a DataFrame
+df = pd.read_csv(csv_file_path)
+
+# Display the first few rows of the DataFrame to verify the data is loaded correctly
+print("Loaded Data:")
+print(df.head())
+
+# Extract the position columns (x, y, z)
+positions = df[['x', 'y', 'z']].values
+
+# Normalize the position data
+scaler = StandardScaler()
+normalized_positions = scaler.fit_transform(positions)
+
+# Prepare the input sequences (frames 1-39) and the corresponding output (frame 40)
+sequence_length = 39
+X = []
+y = []
+
+for i in range(len(normalized_positions) - sequence_length):
+    X.append(normalized_positions[i:i + sequence_length])
+    y.append(normalized_positions[i + sequence_length])
+
+X = np.array(X)
+y = np.array(y)
+
+# Split the data into training and validation sets
+split_index = int(len(X) * 0.8)
+X_train, X_val = X[:split_index], X[split_index:]
+y_train, y_val = y[:split_index], y[split_index:]
+
+# Display shapes of input and output arrays
+print('X_train shape:', X_train.shape)  # Should be (number of sequences, 39, 3)
+print('y_train shape:', y_train.shape)  # Should be (number of sequences, 3)
+print('X_val shape:', X_val.shape)
+print('y_val shape:', y_val.shape)
