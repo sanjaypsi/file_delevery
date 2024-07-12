@@ -1,0 +1,28 @@
+import maya.cmds as cmds
+import csv
+
+# Name of the sphere
+sphere_name = 'pSphere1'
+
+# Frames range
+start_frame = 1
+end_frame = 40
+
+# CSV file path to save the position data
+csv_file_path = 'C:/path/to/your/positions.csv'
+
+# Collect position data
+position_data = []
+
+for frame in range(start_frame, end_frame + 1):
+    cmds.currentTime(frame)
+    position = cmds.xform(sphere_name, query=True, translation=True, worldSpace=True)
+    position_data.append([frame] + position)
+
+# Save the data to CSV
+with open(csv_file_path, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["frame", "x", "y", "z"])
+    writer.writerows(position_data)
+
+print(f"Position data saved to {csv_file_path}")
