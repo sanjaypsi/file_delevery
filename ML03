@@ -26,3 +26,75 @@ with open(csv_file_path, 'w', newline='') as file:
     writer.writerows(position_data)
 
 print(f"Position data saved to {csv_file_path}")
+
+
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+
+# Path to the CSV file
+csv_file_path = 'C:/path/to/your/positions.csv'
+
+# Load the CSV file into a DataFrame
+df = pd.read_csv(csv_file_path)
+
+# Display the first few rows of the DataFrame to verify the data is loaded correctly
+print("Loaded Data:")
+print(df.head())
+
+# Extract the position columns (x, y, z)
+positions = df[['x', 'y', 'z']].values
+
+# Normalize the position data
+scaler = StandardScaler()
+normalized_positions = scaler.fit_transform(positions)
+
+# Prepare the input sequences (frames 1-39) and the corresponding output (frame 40)
+sequence_length = 39
+X = []
+y = []
+
+for i in range(len(normalized_positions) - sequence_length):
+    X.append(normalized_positions[i:i + sequence_length])
+    y.append(normalized_positions[i + sequence_length])
+
+X = np.array(X)
+y = np.array(y)
+
+# Display shapes of input and output arrays
+print('X shape:', X.shape)  # Should be (number of sequences, 39, 3)
+print('y shape:', y.shape)  # Should be (number of sequences, 3)
+
+# Define the LSTM model
+model = Sequential([
+    LSTM(50, input_shape=(sequence_length, 3)),
+    Dense(3)
+])
+
+# Compile the model
+model.compile(optimizer='adam', loss='mse')
+
+# Train the model
+model.fit(X, y, epochs=100, batch_size=1)
+
+# Predict the position at frame 41 based on frames 2-40
+predicted_positions = []
+
+# Start with the last sequence from the training data
+input_sequence = normalized_positions[-sequence_length:]
+
+for _ in range(10):  # Predict 10 frames (41 to 50)
+    input_sequence = input_sequence.reshape((1, sequence_length, 3))
+    predicted_position = model.predict(input_sequence)
+    predicted_positions.append(predicted_position[0])
+    # Update the input sequence to include the new prediction
+    input_sequence = np.append(input_sequence[0][1:], predicted_position, axis=0)
+
+# Denormalize the predicted positions
+predicted_positions = scaler.inverse_transform(predicted_positions)
+
+# Display the predicted positions
+for i, pos in enumerate(predicted_positions, start=41):
+    print(f"Frame {i}: {pos}")
