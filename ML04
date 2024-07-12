@@ -3,7 +3,8 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.optimizers import Adam
+import csv
 
 # Path to the CSV file
 csv_file_path = 'C:/path/to/your/positions.csv'
@@ -34,32 +35,49 @@ for i in range(len(normalized_positions) - sequence_length):
 X = np.array(X)
 y = np.array(y)
 
-# Split the data into training and validation sets
-split_index = int(len(X) * 0.8)
-X_train, X_val = X[:split_index], X[split_index:]
-y_train, y_val = y[:split_index], y[split_index:]
-
 # Display shapes of input and output arrays
-print('X_train shape:', X_train.shape)  # Should be (number of sequences, 39, 3)
-print('y_train shape:', y_train.shape)  # Should be (number of sequences, 3)
-print('X_val shape:', X_val.shape)
-print('y_val shape:', y_val.shape)
+print('X shape:', X.shape)  # Should be (number of sequences, 39, 3)
+print('y shape:', y.shape)  # Should be (number of sequences, 3)
 
-# Define the LSTM model with additional layers and dropout for regularization
+# Define the optimized LSTM model
 model = Sequential([
     LSTM(100, return_sequences=True, input_shape=(sequence_length, 3)),
     Dropout(0.2),
     LSTM(50),
-    Dropout(0.2),
+    Dense(25, activation='relu'),
     Dense(3)
 ])
 
-# Compile the model
-model.compile(optimizer='adam', loss='mse')
+# Compile the model with a tuned optimizer
+optimizer = Adam(learning_rate=0.001)
+model.compile(optimizer=optimizer, loss='mse')
 
-# Define early stopping to prevent overfitting
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+# Train the model
+model.fit(X, y, epochs=200, batch_size=16, validation_split=0.2)
 
-# Train the model with validation data
-history = model.fit(X_train, y_train, epochs=200, batch_size=16, validation_data=(X_val, y_val), callbacks=[early_stopping])
+# Predict the position at frame 41 based on frames 2-40
+predicted_positions = []
 
+# Start with the last sequence from the training data
+input_sequence = normalized_positions[-sequence_length:]
+
+for _ in range(10):  # Predict 10 frames (41 to 50)
+    input_sequence = input_sequence.reshape((1, sequence_length, 3))
+    predicted_position = model.predict(input_sequence)
+    predicted_positions.append(predicted_position[0])
+    # Update the input sequence to include the new prediction
+    input_sequence = np.append(input_sequence[0][1:], predicted_position, axis=0)
+
+# Denormalize the predicted positions
+predicted_positions = scaler.inverse_transform(predicted_positions)
+
+# Save the predicted positions to a CSV file
+predicted_csv_file_path = 'C:/path/to/your/predicted_positions.csv'
+
+with open(predicted_csv_file_path, 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["frame", "x", "y", "z"])
+    for i, pos in enumerate(predicted_positions, start=41):
+        writer.writerow([i, pos[0], pos[1], pos[2]])
+
+print(f"Predicted positions saved to {predicted_csv_file_path}")
