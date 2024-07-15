@@ -1,0 +1,31 @@
+import maya.cmds as cmds
+import json
+
+def get_animation_data():
+    animation_data = {}
+    
+    # Get all joints or controls involved in the walk cycle animation
+    all_objects = cmds.ls(type='joint')
+    
+    for obj in all_objects:
+        keyframes = cmds.keyframe(obj, query=True)
+        
+        if keyframes:
+            animation_data[obj] = {}
+            for attr in ['translateX', 'translateY', 'translateZ', 
+                         'rotateX', 'rotateY', 'rotateZ', 
+                         'scaleX', 'scaleY', 'scaleZ']:
+                key_values = cmds.keyframe(obj, attribute=attr, query=True, valueChange=True)
+                key_times = cmds.keyframe(obj, attribute=attr, query=True, timeChange=True)
+                
+                animation_data[obj][attr] = [{'time': time, 'value': value} for time, value in zip(key_times, key_values)]
+    
+    return animation_data
+
+def export_to_json(filepath):
+    animation_data = get_animation_data()
+    with open(filepath, 'w') as json_file:
+        json.dump(animation_data, json_file, indent=4)
+
+# Run the export function
+export_to_json('C:/path_to_save/walk_cycle_animation.json')
