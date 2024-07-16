@@ -1,0 +1,53 @@
+import maya.cmds as cmds
+import json
+
+# Assume 'joint1' is the joint you're animating
+frames = range(1, 41)
+data = {}
+for frame in frames:
+    cmds.currentTime(frame)
+    data[frame] = cmds.getAttr('joint1.rotate')[0]
+
+with open('/path/to/your/data.json', 'w') as f:
+    json.dump(data, f)
+
+#====================================================================
+import tensorflow as tf
+import numpy as np
+import json
+
+# Load your data
+with open('/path/to/your/data.json', 'r') as f:
+    data = json.load(f)
+
+# Convert your data to a format suitable for training
+x_train = np.array(list(data.keys())).reshape(-1, 1)
+y_train = np.array(list(data.values()))
+
+# Build a simple model
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(10, activation='relu', input_shape=(1,)),
+    tf.keras.layers.Dense(3)  # Assuming 3 rotation values per joint
+])
+
+model.compile(optimizer='adam', loss='mse')
+model.fit(x_train, y_train, epochs=10)
+
+# Predict for future frames
+x_test = np.array(range(41, 51)).reshape(-1, 1)
+predictions = model.predict(x_test)
+
+pred_data = {frame+40: pred.tolist() for frame, pred in enumerate(predictions)}
+with open('/path/to/predictions.json', 'w') as f:
+    json.dump(pred_data, f)
+
+#====================================================================
+import json
+import maya.cmds as cmds
+
+with open('/path/to/predictions.json', 'r') as f:
+    predictions = json.load(f)
+
+for frame, rotation in predictions.items():
+    cmds.currentTime(int(frame))
+    cmds.setAttr('joint1.rotate', *rotation)
