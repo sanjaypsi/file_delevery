@@ -1,3 +1,37 @@
+import maya.cmds as cmds
+import json
+
+def export_animation_to_json(output_path, start_frame, end_frame):
+    # Get all joints in the scene
+    joints = cmds.ls(type="joint")
+    
+    animation_data = {}
+    
+    for joint in joints:
+        joint_data = []
+        for frame in range(start_frame, end_frame + 1):
+            cmds.currentTime(frame)
+            translation = cmds.xform(joint, q=True, ws=True, t=True)
+            rotation = cmds.xform(joint, q=True, ws=True, ro=True)
+            joint_data.append({
+                'frame': frame,
+                'translation': translation,
+                'rotation': rotation
+            })
+        animation_data[joint] = joint_data
+    
+    with open(output_path, 'w') as outfile:
+        json.dump(animation_data, outfile, indent=4)
+
+# Usage
+output_path = "C:/path/to/your/output.json"
+start_frame = 1
+end_frame = 40
+export_animation_to_json(output_path, start_frame, end_frame)
+
+
+
+
 import json
 import numpy as np
 import tensorflow as tf
