@@ -1,0 +1,97 @@
+import json
+import numpy as np
+import tensorflow as tf
+from sklearn.model_selection import train_test_split
+import maya.cmds as cmds
+
+# Load JSON data
+with open("C:/path/to/your/output.json") as json_file:
+    data = json.load(json_file)
+
+# Extract features and labels
+def extract_features_labels(data):
+    features = []
+    labels = []
+    for joint in data:
+        joint_data = data[joint]
+        for frame_data in joint_data:
+            frame = frame_data['frame']
+            translation = frame_data['translation']
+            rotation = frame_data['rotation']
+            features.append(translation + rotation)
+            labels.append(frame)
+    return np.array(features), np.array(labels)
+
+features, labels = extract_features_labels(data)
+
+# Normalize features
+features = (features - np.mean(features, axis=0)) / np.std(features, axis=0)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
+
+# Reshape data for LSTM input
+X_train = X_train.reshape((X_train.shape[0], 1, X_train.shape[1]))
+X_test = X_test.reshape((X_test.shape[0], 1, X_test.shape[1]))
+
+# Build the LSTM model
+model = tf.keras.Sequential([
+    tf.keras.layers.LSTM(50, input_shape=(X_train.shape[1], X_train.shape[2])),
+    tf.keras.layers.Dense(6)  # 3 for translation and 3 for rotation
+])
+
+model.compile(loss='mse', optimizer='adam')
+
+# Train the model
+history = model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=2, shuffle=False)
+
+# Evaluate the model
+loss = model.evaluate(X_test, y_test, verbose=2)
+print(f"Test loss: {loss}")
+
+# Make predictions
+predictions = model.predict(X_test)
+
+# Save predictions to JSON
+def save_predictions_to_json(predictions, output_path, joint_names):
+    prediction_data = {}
+    for i, joint in enumerate(joint_names):
+        prediction_data[joint] = []
+        for j in range(len(predictions)):
+            prediction_data[joint].append({
+                'frame': j + 41,  # Assuming the prediction is for frames 41 to 50
+                'translation': predictions[j][:3].tolist(),
+                'rotation': predictions[j][3:].tolist()
+            })
+    
+    with open(output_path, 'w') as outfile:
+        json.dump(prediction_data, outfile, indent=4)
+
+joint_names = list(data.keys())
+output_path = "C:/path/to/your/predicted_output.json"
+save_predictions_to_json(predictions, output_path, joint_names)
+
+
+import maya.cmds as cmds
+import json
+
+def apply_animation_from_json(input_path):
+    with open(input_path, 'r') as infile:
+        animation_data = json.load(infile)
+    
+    for joint, frames_data in animation_data.items():
+        for frame_data in frames_data:
+            frame = frame_data['frame']
+            translation = frame_data['translation']
+            rotation = frame_data['rotation']
+            
+            cmds.setKeyframe(joint, time=frame, attribute='translateX', value=translation[0])
+            cmds.setKeyframe(joint, time=frame, attribute='translateY', value=translation[1])
+            cmds.setKeyframe(joint, time=frame, attribute='translateZ', value=translation[2])
+            cmds.setKeyframe(joint, time=frame, attribute='rotateX', value=rotation[0])
+            cmds.setKeyframe(joint, time=frame, attribute='rotateY', value=rotation[1])
+            cmds.setKeyframe(joint, time=frame, attribute='rotateZ', value=rotation[2])
+
+# Usage
+input_path = "C:/path/to/your/predicted_output.json"
+apply_animation_from_json(input_path)
