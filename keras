@@ -1,0 +1,30 @@
+import maya.cmds as cmds
+import numpy as np
+from keras.models import Sequential
+from keras.layers import Dense
+
+# Generate some random data for demonstration
+np.random.seed(42)
+X = np.random.rand(100, 1)
+y = 3 * X + 2 + np.random.randn(100, 1) * 0.1
+
+# Create a Keras model
+model = Sequential()
+model.add(Dense(units=1, input_dim=1, activation='linear'))
+
+# Compile the model
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train the model
+model.fit(X, y, epochs=100, verbose=0)
+
+# Predict using the trained model
+new_X = np.array([[0.5]])
+predicted_y = model.predict(new_X)
+
+# Print the result
+print(f"Predicted y for X = {new_X[0][0]}: {predicted_y[0][0]}")
+
+# You can also create Maya objects or perform other actions based on the prediction
+# For example:
+# cmds.polySphere(radius=predicted_y[0][0])
