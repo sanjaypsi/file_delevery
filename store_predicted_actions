@@ -3,23 +3,23 @@ import json
 from mock_maya_env import MockMayaAnimationEnv
 
 # Load initial position from file
-with open('initial_position.json', 'r') as f:
+with open('pybullet/initial_position.json', 'r') as f:
     initial_position = json.load(f)['initial_position']
 
-# Load the trained model
-model = PPO.load('ppo_maya_animation')
+# Load the trained model (this will automatically handle the zip file or directory)
+model = PPO.load('pybullet/ppo_maya_animation')
 
 # Create the environment
 env = MockMayaAnimationEnv(start_frame=1, end_frame=100, initial_position=initial_position)
 
 # Reset the environment
-obs = env.reset()
+obs, _ = env.reset()
 
 predicted_actions = []
 
 for _ in range(env.end_frame - env.start_frame):
     action, _states = model.predict(obs)
-    obs, rewards, done, info = env.step(action)
+    obs, rewards, done, _, _ = env.step(action)
     predicted_actions.append({
         'frame': env.current_frame,
         'action': action.tolist(),
@@ -29,5 +29,5 @@ for _ in range(env.end_frame - env.start_frame):
         break
 
 # Save the predicted actions to a JSON file
-with open('predicted_actions.json', 'w') as f:
+with open('pybullet/predicted_actions.json', 'w') as f:
     json.dump(predicted_actions, f, indent=4)
