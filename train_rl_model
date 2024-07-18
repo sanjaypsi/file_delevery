@@ -1,0 +1,23 @@
+from stable_baselines3 import PPO
+from stable_baselines3.common.env_checker import check_env
+import json
+from mock_maya_env import MockMayaAnimationEnv
+
+# Load initial position from file
+with open('initial_position.json', 'r') as f:
+    initial_position = json.load(f)['initial_position']
+
+# Instantiate the environment
+env = MockMayaAnimationEnv(start_frame=1, end_frame=100, initial_position=initial_position)
+
+# Check the environment
+check_env(env)
+
+# Instantiate the agent
+model = PPO('MlpPolicy', env, verbose=1)
+
+# Train the agent
+model.learn(total_timesteps=10000)
+
+# Save the model
+model.save('ppo_maya_animation')
