@@ -1,0 +1,67 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+import numpy as np
+
+# Generate synthetic dataset
+def generate_synthetic_data(num_samples=1000, seq_length=40):
+    data = []
+    for _ in range(num_samples):
+        sequence = []
+        for t in range(seq_length):
+            x = t / seq_length
+            y = np.sin(2 * np.pi * x) + np.random.normal(0, 0.1)
+            sequence.append([x, y])
+        data.append(sequence)
+    return np.array(data)
+
+data = generate_synthetic_data()
+labels = data[:, 1:, :]  # Future positions
+data = data[:, :-1, :]  # Current positions
+
+# Convert to PyTorch tensors
+data = torch.tensor(data, dtype=torch.float32)
+labels = torch.tensor(labels, dtype=torch.float32)
+
+# Create DataLoader
+dataset = TensorDataset(data, labels)
+dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+# Define the Model
+class MotionPredictor(nn.Module):
+    def __init__(self):
+        super(MotionPredictor, self).__init__()
+        self.lstm = nn.LSTM(input_size=2, hidden_size=50, num_layers=2, batch_first=True)
+        self.fc = nn.Linear(50, 2)
+
+    def forward(self, x):
+        out, _ = self.lstm(x)
+        out = self.fc(out)
+        return out
+
+model = MotionPredictor()
+
+# Define loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+# Training loop
+num_epochs = 50
+for epoch in range(num_epochs):
+    for inputs, targets in dataloader:
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+        loss.backward()
+        optimizer.step()
+    
+    print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+
+# Save the Model
+torch.save(model.state_dict(), 'motion_predictor.pth')
+
+# Load the Model
+model = MotionPredictor()
+model.load_state_dict(torch.load('motion_predictor.pth'))
+model.eval()
