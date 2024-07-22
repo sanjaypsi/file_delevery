@@ -1,0 +1,81 @@
+# animation GPT how o use general model
+
+import maya.cmds as cmds
+import json
+
+def export_animation_data(start_frame, end_frame, file_path):
+    animation_data = {}
+    for frame in range(start_frame, end_frame + 1):
+        cmds.currentTime(frame)
+        animation_data[frame] = {}
+        for obj in cmds.ls(selection=True):
+            translation = cmds.getAttr(f"{obj}.translate")[0]
+            rotation = cmds.getAttr(f"{obj}.rotate")[0]
+            animation_data[frame][obj] = {
+                'translation': translation,
+                'rotation': rotation
+            }
+
+    with open(file_path, 'w') as f:
+        json.dump(animation_data, f, indent=4)
+
+export_animation_data(1, 100, 'animation_data.json')
+
+# ========================================================================
+
+import torch
+
+model = torch.load('path_to_your_model.pth')
+model.eval()
+
+# ========================================================================
+import numpy as np
+
+def preprocess_data(animation_data):
+    # Example: normalize and reshape data
+    data = []
+    for frame, objects in animation_data.items():
+        for obj, attributes in objects.items():
+            data.append(attributes['translation'] + attributes['rotation'])
+    return np.array(data)
+
+with open('animation_data.json') as f:
+    animation_data = json.load(f)
+
+processed_data = preprocess_data(animation_data)
+
+# ========================================================================
+with torch.no_grad():
+    predictions = model(torch.tensor(processed_data).float())
+
+# ========================================================================
+def apply_predictions(predictions, start_frame, obj):
+    for i, frame in enumerate(range(start_frame, start_frame + len(predictions))):
+        cmds.currentTime(frame)
+        cmds.setAttr(f"{obj}.translate", *predictions[i][:3])
+        cmds.setAttr(f"{obj}.rotate", *predictions[i][3:])
+
+apply_predictions(predictions.numpy(), 45, 'pSphere1')
+
+# ========================================================================
+# ========================================================================
+# ========================================================================
+
+Example: Applying a Pre-trained Model to Modify Animation
+Here’s a practical example of using a pre-trained model to modify an existing walk cycle animation by lifting the character's right arm between frames 45 to 60.
+
+Export Walk Cycle Animation Data:
+
+export_animation_data(1, 100, 'walk_cycle_data.json')
+# ========================================================================
+
+with open('walk_cycle_data.json') as f:
+    walk_cycle_data = json.load(f)
+
+processed_walk_cycle_data = preprocess_data(walk_cycle_data)
+
+# ========================================================================
+model = torch.load('path_to_your_model.pth')
+model.eval()
+
+
