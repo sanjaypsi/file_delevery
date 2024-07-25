@@ -1,0 +1,44 @@
+import json
+import maya.cmds as cmds
+
+# Function to export joint keyframe data to a JSON file
+def export_joint_data_to_json(file_path):
+    joint_data = []
+    
+    # Get all joints in the scene
+    joints = cmds.ls(type="joint")
+    
+    # Iterate over each joint
+    for joint in joints:
+        joint_dict = {'joint_name': joint, 'keyframes': []}
+        
+        # Iterate over each frame
+        start_frame = int(cmds.playbackOptions(query=True, minTime=True))
+        end_frame = int(cmds.playbackOptions(query=True, maxTime=True))
+        
+        for frame in range(start_frame, end_frame + 1):
+            cmds.currentTime(frame)
+            translation = cmds.xform(joint, query=True, translation=True, worldSpace=True)
+            rotation = cmds.xform(joint, query=True, rotation=True, worldSpace=True)
+            
+            keyframe_data = {
+                'frame': frame,
+                'translate_x': translation[0],
+                'translate_y': translation[1],
+                'translate_z': translation[2],
+                'rotate_x': rotation[0],
+                'rotate_y': rotation[1],
+                'rotate_z': rotation[2],
+                'label': 'walking'
+            }
+            
+            joint_dict['keyframes'].append(keyframe_data)
+        
+        joint_data.append(joint_dict)
+    
+    # Write data to a JSON file
+    with open(file_path, 'w') as json_file:
+        json.dump(joint_data, json_file, indent=4)
+
+# Example usage
+export_joint_data_to_json('path/to/your/animation_data.json')
