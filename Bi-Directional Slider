@@ -1,0 +1,96 @@
+import maya.cmds as cmds
+import maya.OpenMaya as om
+from PySide2 import QtWidgets, QtCore
+from shiboken2 import wrapInstance
+import maya.OpenMayaUI as omui
+
+def get_maya_main_window():
+    """Get the Maya main window as a QMainWindow instance."""
+    main_window_ptr = omui.MQtUtil.mainWindow()
+    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
+
+class SliderSphereConnector(QtWidgets.QWidget):
+    def __init__(self, sphere_name="mySphere", parent=None):
+        super(SliderSphereConnector, self).__init__(parent)
+
+        self.sphere_name = sphere_name
+        self.callback_id = None
+
+        # Create a sphere if it doesn't already exist
+        if not cmds.objExists(self.sphere_name):
+            self.sphere_name = cmds.polySphere(name=self.sphere_name)[0]
+
+        # Build the UI
+        self.setWindowTitle("Bi-Directional Slider")
+        self.setWindowFlags(QtCore.Qt.Window)
+        self.build_ui()
+
+        # Set up the callback
+        self.create_callback()
+
+    def build_ui(self):
+        """Build the UI with a slider and a Reset button."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Slider
+        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider.setMinimum(-100)
+        self.slider.setMaximum(100)
+        self.slider.setValue(int(cmds.getAttr("{}.translateX".format(self.sphere_name)) * 10))
+        self.slider.valueChanged.connect(self.update_sphere_translation)
+        layout.addWidget(self.slider)
+
+        # Reset Button
+        reset_button = QtWidgets.QPushButton("Reset")
+        reset_button.clicked.connect(self.reset_sphere_translation)
+        layout.addWidget(reset_button)
+
+    def update_sphere_translation(self):
+        """Update the sphere's translateX attribute when the slider is moved."""
+        value = self.slider.value() / 10.0
+        cmds.setAttr("{}.translateX".format(self.sphere_name), value)
+
+    def reset_sphere_translation(self):
+        """Reset the sphere's translateX attribute to 0 and update the slider."""
+        cmds.setAttr("{}.translateX".format(self.sphere_name), 0.0)
+        self.slider.setValue(0)
+
+    def on_translate_change(self, msg, plug, other_plug, client_data):
+        """Update the slider value when the sphere's translateX attribute changes."""
+        node_fn = om.MFnDependencyNode(client_data)
+        translate_plug = node_fn.findPlug("translateX", False)
+        if plug == translate_plug:
+            value = cmds.getAttr("{}.translateX".format(self.sphere_name))
+            self.slider.blockSignals(True)
+            self.slider.setValue(int(value * 10))
+            self.slider.blockSignals(False)
+
+    def create_callback(self):
+        """Create a callback to monitor changes to the sphere's translateX attribute."""
+        selection_list = om.MSelectionList()
+        selection_list.add(self.sphere_name)
+        node = om.MObject()
+        selection_list.getDependNode(0, node)
+        self.callback_id = om.MNodeMessage.addAttributeChangedCallback(
+            node, self.on_translate_change, node
+        )
+
+    def closeEvent(self, event):
+        """Cleanup the callback when the window is closed."""
+        if self.callback_id:
+            om.MMessage.removeCallback(self.callback_id)
+            self.callback_id = None
+        event.accept()
+
+# Launch the UI
+def show_ui():
+    global slider_sphere_window
+    try:
+        slider_sphere_window.close()
+    except:
+        pass
+
+    slider_sphere_window = SliderSphereConnector(parent=get_maya_main_window())
+    slider_sphere_window.show()
+
+show_ui()
