@@ -1,0 +1,66 @@
+from PySide2.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QScrollArea
+)
+from PySide2.QtCore import Qt
+
+
+class CollapsibleTab(QWidget):
+    def __init__(self, title, parent=None):
+        super().__init__(parent)
+
+        # Main layout
+        self.layout = QVBoxLayout(self)
+        self.setLayout(self.layout)
+
+        # Header button
+        self.toggle_button = QPushButton(title)
+        self.toggle_button.setCheckable(True)
+        self.toggle_button.setChecked(True)
+        self.toggle_button.clicked.connect(self.toggle_content)
+
+        # Content area
+        self.content_area = QWidget()
+        self.content_layout = QVBoxLayout(self.content_area)
+        self.content_area.setLayout(self.content_layout)
+
+        # Add header and content to the main layout
+        self.layout.addWidget(self.toggle_button)
+        self.layout.addWidget(self.content_area)
+
+    def toggle_content(self):
+        """Toggle the visibility of the content area."""
+        is_expanded = self.toggle_button.isChecked()
+        self.content_area.setVisible(is_expanded)
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        # Main widget
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # Main layout
+        layout = QVBoxLayout(central_widget)
+
+        # Collapsible tabs
+        tab1 = CollapsibleTab("Tab 1")
+        tab1.content_layout.addWidget(QLabel("This is the content of Tab 1."))
+        layout.addWidget(tab1)
+
+        tab2 = CollapsibleTab("Tab 2")
+        tab2.content_layout.addWidget(QLabel("This is the content of Tab 2."))
+        layout.addWidget(tab2)
+
+        # Add more tabs as needed
+        layout.addStretch()
+
+
+if __name__ == "__main__":
+    app = QApplication([])
+    window = MainWindow()
+    window.resize(400, 300)
+    window.show()
+    app.exec_()
