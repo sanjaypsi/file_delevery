@@ -1,66 +1,127 @@
-from PySide2.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QScrollArea
-)
-from PySide2.QtCore import Qt
+import os
+import sys
+import maya.cmds as cmds
+from PySide2.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QPushButton, QTabWidget, QGroupBox
+from PySide2 import QtWidgets, QtCore, QtUiTools
+import maya.OpenMayaUI as omui
+from shiboken2 import wrapInstance
+import importlib
 
+import LoadCollapsed_widget
+importlib.reload(LoadCollapsed_widget)
 
-class CollapsibleTab(QWidget):
-    def __init__(self, title, parent=None):
-        super().__init__(parent)
+SCRIPT_LOC = os.path.dirname(__file__)
+icons = os.path.join(SCRIPT_LOC, 'resource')
+collapseWidgetUI = os.path.join(SCRIPT_LOC, 'ui', 'collapsible_widget.ui')
 
-        # Main layout
-        self.layout = QVBoxLayout(self)
-        self.setLayout(self.layout)
+def get_maya_window():
+    """Get Maya's main window as a PySide2 object."""
+    main_window_ptr = omui.MQtUtil.mainWindow()
+    if not main_window_ptr:
+        raise RuntimeError("Failed to obtain Maya's main window.")
+    return wrapInstance(int(main_window_ptr), QWidget)
 
-        # Header button
-        self.toggle_button = QPushButton(title)
-        self.toggle_button.setCheckable(True)
-        self.toggle_button.setChecked(True)
-        self.toggle_button.clicked.connect(self.toggle_content)
+def load_ui(ui_file, parent=None):
+    """Load the .ui file and return the corresponding widget."""
+    loader = QtUiTools.QUiLoader()
+    ui_file = QtCore.QFile(ui_file)
+    if not ui_file.exists():
+        raise FileNotFoundError(f"UI file {ui_file.fileName()} not found.")
+    ui_file.open(QtCore.QFile.ReadOnly)
+    ui_widget = loader.load(ui_file, parent)
+    ui_file.close()
+    if not ui_widget:
+        raise RuntimeError(f"Failed to load UI file {ui_file.fileName()}.")
+    return ui_widget
 
-        # Content area
-        self.content_area = QWidget()
-        self.content_layout = QVBoxLayout(self.content_area)
-        self.content_area.setLayout(self.content_layout)
+class MyWindow(QMainWindow):
+    """Main window class."""
+    def __init__(self, parent=None):
+        super(MyWindow, self).__init__(parent)
+        self.main_ui = os.path.join(SCRIPT_LOC, "ui", "UI.ui")
+        if not os.path.exists(self.main_ui):
+            raise FileNotFoundError(f"UI file not found: {self.main_ui}")
+        print(f"Loading UI from: {self.main_ui}")
+        
+        self.ui = load_ui(self.main_ui, parent=self)
+        if not self.ui:
+            raise RuntimeError("UI failed to load.")
+        
+        # Setup the window
+        self.setWindowTitle("Master File Manager ver2.0")
+        self.resize(500, 700)
+        self.setCentralWidget(self.ui)
+        self.init_ui()
 
-        # Add header and content to the main layout
-        self.layout.addWidget(self.toggle_button)
-        self.layout.addWidget(self.content_area)
+        self.createConnections()
+        self.add_layers()
+        self.add_uiWidget()
 
-    def toggle_content(self):
-        """Toggle the visibility of the content area."""
-        is_expanded = self.toggle_button.isChecked()
-        self.content_area.setVisible(is_expanded)
+    def init_ui(self):
+        """Initialize the UI."""
+        self.ui.destroyed.connect(self.on_exit_code)
 
+    def createConnections(self):
+        pass
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def on_exit_code(self):
+        """Cleanup when the UI is closed."""
+        sys.stdout.write("UI successfully closed\n")
+        self.deleteLater()
 
-        # Main widget
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+    def add_layers(self):
+        pass
 
-        # Main layout
-        layout = QVBoxLayout(central_widget)
+    def add_uiWidget(self):
+        """Add collapsible functionality to tabs within a QTabWidget."""
+        self.collapseWidgets = LoadCollapsed_widget._loadWidget(widgetCollapse=collapseWidgetUI)
+        self.getUIWidget = self.collapseWidgets._loadUI()
 
-        # Collapsible tabs
-        tab1 = CollapsibleTab("Tab 1")
-        tab1.content_layout.addWidget(QLabel("This is the content of Tab 1."))
-        layout.addWidget(tab1)
+        # Ensure tabWidget is a QTabWidget
+        if isinstance(self.ui.tabWidget, QtWidgets.QTabWidget):
+            # Create a QWidget to wrap the content of the tab
+            self.wrapper_widget = QWidget()
+            self.wrapper_layout = QVBoxLayout(self.wrapper_widget)
 
-        tab2 = CollapsibleTab("Tab 2")
-        tab2.content_layout.addWidget(QLabel("This is the content of Tab 2."))
-        layout.addWidget(tab2)
+            # Add the collapsible widget into the layout
+            self.wrapper_layout.addWidget(self.getUIWidget)
 
-        # Add more tabs as needed
-        layout.addStretch()
+            # Create a QPushButton for collapsing the widget
+            self.toggleButton = QPushButton("Collapse", self)
+            self.toggleButton.setCheckable(True)
+            self.toggleButton.setChecked(True)
+            self.toggleButton.clicked.connect(self.toggle_collapse)
 
+            # Add the button and content widget into the tab
+            self.wrapper_layout.addWidget(self.toggleButton)
 
-if __name__ == "__main__":
-    app = QApplication([])
-    window = MainWindow()
-    window.resize(400, 300)
-    window.show()
-    app.exec_()
+            # Add the widget to the tab
+            collapsible_tab_name = "Collapsible Tab"
+            tab_index = self.ui.tabWidget.addTab(self.wrapper_widget, collapsible_tab_name)
+            
+        else:
+            print("Error: tabWidget is not a QTabWidget in your UI!")
+
+    def toggle_collapse(self):
+        """Toggle the visibility of the collapsible content."""
+        if self.getUIWidget.isVisible():
+            # Hide the content widget to collapse it
+            self.getUIWidget.setVisible(False)
+            self.toggleButton.setText("Expand")  # Update button text
+        else:
+            # Show the content widget to expand it
+            self.getUIWidget.setVisible(True)
+            self.toggleButton.setText("Collapse")  # Update button text
+
+def show_window():
+    """Show the window."""
+    global my_window
+    if 'my_window' in globals() and my_window is not None:
+        try:
+            my_window.close()  # Close the window if it already exists
+            my_window.deleteLater()
+        except:
+            pass
+
+    my_window = MyWindow(parent=get_maya_window())
+    my_window.show()
