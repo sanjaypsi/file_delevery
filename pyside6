@@ -1,3 +1,68 @@
+import os
+import sys
+import json
+import importlib
+import glob
+
+import maya.OpenMayaUI as omui
+
+# Safe import: PySide6 or PySide2 depending on Maya version
+import maya.cmds as cmds
+
+try:
+    from PySide6.QtWidgets import (QDialog, QApplication, QVBoxLayout, QMessageBox,
+                                    QMenuBar, QWidget, QAbstractItemView, QHeaderView)
+    from PySide6 import QtWidgets, QtCore, QtUiTools
+    from PySide6.QtCore import QFile
+    from PySide6 import QtGui
+    from shiboken6 import wrapInstance
+
+    using_pyside_version = 6
+except ImportError:
+    try:
+        from PySide2 import QtWidgets, QtCore, QtUiTools, QtGui, QMessageBox
+        from PySide2.QtCore import QFile
+        from shiboken2 import wrapInstance
+        using_pyside_version = 2
+    except ImportError:
+        cmds.error("Neither PySide6 nor PySide2 could be imported. Please check your Maya version and Python environment.")
+
+# ========================================================================================================
+# Custom Imports
+# ========================================================================================================
+script_dir      = os.path.dirname(os.path.abspath(__file__))
+_root           = os.path.abspath(os.path.join(script_dir, "..")) 
+sys.path.insert(0, script_dir)
+sys.path.insert(0, _root)  # Add root directory to the path for custom modules
+
+ui_path         = os.path.join(os.path.dirname(script_dir), "gui/ui/mainUI.ui")
+config_path     = os.path.join((_root), "config/config.json").replace("\\", "/")
+icon_path       = os.path.join(os.path.dirname(_root), "resources/icons/user_icon.png").replace("\\", "/")
+
+from gui import utils
+importlib.reload(utils)
+
+# Get Currently Projet 
+PROJECTSET = os.environ.get("PPI_PROJECT_ROOT")
+
+def read_config_values():
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config file not found: {config_path}")
+
+    with open(config_path, 'r') as f:
+        data = json.load(f)
+
+    # Merge list of dicts into a single dict
+    merged = {}
+    for entry in data:
+        if isinstance(entry, dict):
+            merged.update(entry)
+
+    return merged
+    # # Access values safely
+    # project_path = config_data.get("PROIJECT_PATH", "")
+    # phase_list   = config_data.get("PHASE", [])
+    # variation    = config_data.get("VARIATION", [])
 
 # ================================================================================================================================
 # -
@@ -572,3 +637,20 @@ class MyCustomUI(QtWidgets.QDialog):
             revision       = "000",
             result         = "Dropped"
         )
+
+# ================================================================================================================================
+# -
+# ================================================================================================================================
+def main():
+    ui_file_path = ui_path
+
+    if not os.path.exists(ui_file_path):
+        raise IOError(f"UI file not found: {ui_file_path}")
+
+    MyCustomUI.delete_existing()
+    win = MyCustomUI(ui_file_path)
+    win.show_ui()
+
+
+# if __name__ == "__main__":
+#     main()
