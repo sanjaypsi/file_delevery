@@ -1,0 +1,204 @@
+# -*- coding: utf-8 -*-
+# ================================================================================================================
+# Maya Texture Analyzer
+# Author    : [Your Name]
+# License   : [Your License]
+# ================================================================================================================
+import maya.cmds as cmds
+import os
+import re
+import json
+
+
+# ===============================================================================================================
+# TextureAnalyzer Class
+# ===============================================================================================================
+class TextureAnalyzer(object):
+    def __init__(self):
+        pass
+
+    # --------------------------------------------------------------------------------------
+    # UDIM tile detection
+    # --------------------------------------------------------------------------------------
+    def get_udim_tiles_from_file_node(self, file_node):
+        """
+        Return all UDIM tile files if the file node uses UDIM tiling.
+        """
+        try:
+            uv_mode = cmds.getAttr(file_node + ".uvTilingMode")
+        except Exception:
+            uv_mode = 0
+
+        if uv_mode != 3:
+            return []  # Not UDIM tiling mode
+
+        try:
+            base_texture = cmds.getAttr(file_node + ".fileTextureName")
+            directory = os.path.normpath(os.path.dirname(base_texture))
+            filename = os.path.basename(base_texture)
+
+            match = re.match(r"(.*)\.(1\d{3})\.(\w+)", filename)
+            if not match:
+                return []
+
+            prefix = match.group(1)
+            ext = match.group(3)
+
+            # Pattern: prefix.1XXX.ext
+            udim_pattern = re.compile(r'^' + re.escape(prefix) + r'\.(1\d{3})\.' + re.escape(ext) + r'$')
+
+            all_files = os.listdir(directory)
+            matching_tiles = [os.path.join(directory, f) for f in all_files if udim_pattern.match(f)]
+
+            return sorted(matching_tiles)
+
+        except Exception as e:
+            print("⚠ Failed to process UDIM tiles for '{}': {}".format(file_node, e))
+            return []
+
+    # --------------------------------------------------------------------------------------
+    # Shader attribute extraction
+    # --------------------------------------------------------------------------------------
+    def get_shader_attribute_info(self, shader, attribute):
+        """
+        Get texture connection or fallback color/scalar for a shader attribute.
+        Traces upstream through pixSwitchRGBA, remap nodes, file nodes, etc.
+        Returns: {texture: str or list, value: list or float}
+        """
+        info = {
+            "texture": "",
+            "value": [0.0, 0.0, 0.0] if attribute.lower().endswith("color") else 1.0
+        }
+
+        if not cmds.attributeQuery(attribute, node=shader, exists=True):
+            print(f"⚠ Attribute '{attribute}' not found on shader '{shader}'")
+            return info
+
+        visited = set()
+        current_attr = f"{shader}.{attribute}"
+
+        while True:
+            upstream = cmds.listConnections(current_attr, plugs=True, source=True, destination=False) or []
+            if not upstream:
+                try:
+                    value = cmds.getAttr(current_attr)
+                    if value is not None:
+                        if isinstance(value, (tuple, list)):
+                            info["value"] = list(value[0]) if isinstance(value[0], (tuple, list)) else list(value)
+                        else:
+                            info["value"] = value
+                except Exception as e:
+                    print(f"⚠ Could not read value from '{current_attr}': {e}")
+                break
+
+            upstream_attr = upstream[0]
+            if upstream_attr in visited:
+                break
+            visited.add(upstream_attr)
+
+            node, attr = upstream_attr.split(".")
+            node_type = cmds.nodeType(node)
+
+            if node_type == "file":
+                try:
+                    udim_tiles = self.get_udim_tiles_from_file_node(node)
+                    if udim_tiles:
+                        info["texture"] = udim_tiles
+                    else:
+                        texture_path = cmds.getAttr(node + ".fileTextureName")
+                        if texture_path:
+                            info["texture"] = texture_path
+                except Exception as e:
+                    print(f"⚠ Could not read texture from '{node}': {e}")
+                break
+
+            elif node_type == "pixSwitchRGBA":
+                try:
+                    # Get the inputIndex used
+                    input_index = cmds.getAttr(node + ".inputIndex")
+                    input_attr = f"{node}.input[{input_index}]"
+                    current_attr = input_attr  # Continue tracing from selected input
+                except Exception as e:
+                    print(f"⚠ Could not trace pixSwitchRGBA '{node}': {e}")
+                    break
+            else:
+                current_attr = upstream_attr  # Continue upstream
+
+        return info
+
+    # --------------------------------------------------------------------------------------
+    # Collect shader & texture data
+    # --------------------------------------------------------------------------------------
+    def get_all_shader_texture_info(self):
+        """
+        Collect texture and color information for shaders.
+        """
+        shader_attributes = {
+            "lambert": ["color", "transparency"],
+            "blinn": ["color", "specularColor", "transparency"],
+            "phong": ["color", "specularColor", "transparency"],
+            "aiStandardSurface": ["baseColor", "specularColor", "opacity"],
+            "pixToonLegacy": ["diffuseLitColor", "specularLitColor", "cutoutOpacity"],
+        }
+
+        all_data = {}
+
+        for shader_type, attributes in shader_attributes.items():
+            shader_nodes = cmds.ls(type=shader_type)
+            for shader in shader_nodes:
+                attr_data = {}
+                for attr in attributes:
+                    attr_data[attr] = self.get_shader_attribute_info(shader, attr)
+                all_data[shader] = attr_data
+
+        return all_data
+
+    # --------------------------------------------------------------------------------------
+    # Export to JSON
+    # --------------------------------------------------------------------------------------
+    def export_shader_info_to_json(self, output_path):
+        """
+        Export the collected shader data to a JSON file.
+        """
+        shader_data = self.get_all_shader_texture_info()
+
+        try:
+            with open(output_path, "w") as f:
+                json.dump(shader_data, f, indent=4)
+            print("✅ Exported shader info to: {}".format(output_path))
+        except Exception as e:
+            print("⚠ Failed to export shader info: {}".format(str(e)))
+
+    # --------------------------------------------------------------------------------------
+    # Print summary
+    # --------------------------------------------------------------------------------------
+    def print_shader_summary(self):
+        """
+        Print a readable summary of shaders and their texture/color info.
+        """
+        shader_data = self.get_all_shader_texture_info()
+
+        for shader, attrs in shader_data.items():
+            print("\n🧪 Shader: {}".format(shader))
+            for attr, data in attrs.items():
+                print("  ▶ Attribute: {}".format(attr))
+                print("    ├ Texture: {}".format(data["texture"]))
+                print("    └ Value:   {}".format(data["value"]))
+
+
+# ================================================================================================================
+# Example runner
+# ================================================================================================================
+def _runTextureAnalyzer():
+    analyzer = TextureAnalyzer()
+    analyzer.print_shader_summary()
+
+    # Set your export path
+    output_path = "E:/Sanjay/tools/maya2022/AssetDelivery/config/shader_texture_report.json"
+    analyzer.export_shader_info_to_json(output_path)
+
+
+# ================================================================================================================
+# Uncomment below to run directly in Maya Script Editor
+# _runTextureAnalyzer()
+# ================================================================================================================
