@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1039</width>
+    <height>451</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
+   <item>
+    <widget class="QTabWidget" name="tabWidget_2">
+     <property name="tabPosition">
+      <enum>QTabWidget::North</enum>
+     </property>
+     <property name="tabShape">
+      <enum>QTabWidget::Rounded</enum>
+     </property>
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="documentMode">
+      <bool>true</bool>
+     </property>
+     <property name="tabsClosable">
+      <bool>true</bool>
+     </property>
+     <property name="movable">
+      <bool>true</bool>
+     </property>
+     <property name="tabBarAutoHide">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="WorkTab_2">
+      <attribute name="title">
+       <string>WorkTab</string>
+      </attribute>
+      <widget class="QWidget" name="horizontalLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>10</y>
+         <width>1031</width>
+         <height>408</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="Main_horizontalLayout">
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <item alignment="Qt::AlignHCenter">
+         <widget class="QSplitter" name="splitterMain_2">
+          <property name="frameShape">
+           <enum>QFrame::Box</enum>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QWidget" name="layoutWidget_9">
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QSplitter" name="splitterTop_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QSplitter" name="splitterSecondTop_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <widget class="QWidget" name="layoutWidget_10">
+                <layout class="QVBoxLayout" name="verticalLayout_typeMain_3" stretch="2,23">
+                 <property name="spacing">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="Type">
+                   <property name="frameShape">
+                    <enum>QFrame::Panel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <property name="text">
+                    <string>Type</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_type_3">
+                   <item>
+                    <widget class="QListWidget" name="listWidget_type"/>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="layoutWidget_11">
+                <layout class="QVBoxLayout" name="verticalLayout_nameMain_2" stretch="2,23">
+                 <property name="spacing">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="name_2">
+                   <property name="frameShape">
+                    <enum>QFrame::Panel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <property name="text">
+                    <string>Name</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_name_2" stretch="0">
+                   <property name="spacing">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <widget class="QListWidget" name="listWidget_name"/>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+               <widget class="QWidget" name="layoutWidget_12">
+                <layout class="QVBoxLayout" name="verticalLayout_assetMain_2" stretch="2,23">
+                 <property name="spacing">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="asset">
+                   <property name="frameShape">
+                    <enum>QFrame::Panel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <property name="text">
+                    <string>Asset</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_asset_2">
+                   <item>
+                    <widget class="QListWidget" name="listWidget_asset">
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::MultiSelection</enum>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
+              <widget class="QWidget" name="layoutWidget_13">
+               <layout class="QVBoxLayout" name="verticalLayout_9" stretch="2,2">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_typeMain_4" stretch="2,11">
+                  <property name="spacing">
+                   <number>2</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="Type_2">
+                    <property name="frameShape">
+                     <enum>QFrame::Panel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                    <property name="text">
+                     <string>Phase</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_type_4">
+                    <item>
+                     <widget class="QListWidget" name="listWidget_phase">
+                      <property name="selectionBehavior">
+                       <enum>QAbstractItemView::SelectRows</enum>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QVBoxLayout" name="verticalLayout_10" stretch="2,0">
+                  <property name="spacing">
+                   <number>2</number>
+                  </property>
+                  <item>
+                   <widget class="QLabel" name="variation">
+                    <property name="frameShape">
+                     <enum>QFrame::Panel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                    <property name="text">
+                     <string>Variation</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QListWidget" name="listWidget_variation">
+                    <property name="selectionBehavior">
+                     <enum>QAbstractItemView::SelectRows</enum>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSplitter" name="splitter_6">
+              <property name="frameShape">
+               <enum>QFrame::WinPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="Line" name="line">
+               <property name="font">
+                <font/>
+               </property>
+               <property name="autoFillBackground">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">alternate-background-color: rgb(0, 255, 0);</string>
+               </property>
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+              <widget class="QPushButton" name="Add_list_btn">
+               <property name="text">
+                <string>Add - List</string>
+               </property>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="layoutWidget_14">
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_12">
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <item>
+               <widget class="QTableWidget" name="table">
+                <property name="dragDropMode">
+                 <enum>QAbstractItemView::DragDrop</enum>
+                </property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectRows</enum>
+                </property>
+                <attribute name="horizontalHeaderCascadingSectionResizes">
+                 <bool>true</bool>
+                </attribute>
+                <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+                 <bool>true</bool>
+                </attribute>
+                <attribute name="verticalHeaderStretchLastSection">
+                 <bool>false</bool>
+                </attribute>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QSplitter" name="splitter_7">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <widget class="QWidget" name="layoutWidget_15">
+               <layout class="QVBoxLayout" name="verticalLayout_13">
+                <item>
+                 <widget class="Line" name="line_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="2,4">
+                  <property name="spacing">
+                   <number>4</number>
+                  </property>
+                  <item>
+                   <widget class="QSplitter" name="splitter_8">
+                    <property name="styleSheet">
+                     <string notr="true">background-color: rgb(0, 0, 0);
+color: rgb(255, 255, 255);</string>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <widget class="QLabel" name="label">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="text">
+                      <string>Create Structure Base On:</string>
+                     </property>
+                    </widget>
+                    <widget class="QRadioButton" name="noneRB">
+                     <property name="text">
+                      <string>None</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                    <widget class="QRadioButton" name="dateRB">
+                     <property name="text">
+                      <string>Date</string>
+                     </property>
+                    </widget>
+                    <widget class="QRadioButton" name="revisionRB">
+                     <property name="text">
+                      <string>Revision</string>
+                     </property>
+                     <property name="checked">
+                      <bool>false</bool>
+                     </property>
+                    </widget>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSplitter" name="splitter_9">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <widget class="QLineEdit" name="lineEdit"/>
+                    <widget class="QToolButton" name="toolButton">
+                     <property name="text">
+                      <string>----  Add - Path</string>
+                     </property>
+                    </widget>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="Line" name="line_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="layoutWidget_16">
+               <layout class="QVBoxLayout" name="verticalLayout_14">
+                <item>
+                 <widget class="QSplitter" name="splitter_10">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <widget class="QPushButton" name="Click_Btn">
+                   <property name="text">
+                    <string>Click</string>
+                   </property>
+                   <property name="autoDefault">
+                    <bool>false</bool>
+                   </property>
+                   <property name="default">
+                    <bool>false</bool>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                  <widget class="QPushButton" name="pushButton">
+                   <property name="text">
+                    <string>Remove - Sel- Row</string>
+                   </property>
+                  </widget>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QProgressBar" name="progressBar">
+                  <property name="value">
+                   <number>24</number>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                  <property name="invertedAppearance">
+                   <bool>false</bool>
+                  </property>
+                  <property name="textDirection">
+                   <enum>QProgressBar::TopToBottom</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QWidget" name="DeleveryTab_2">
+      <attribute name="title">
+       <string>DeleveryTab</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
